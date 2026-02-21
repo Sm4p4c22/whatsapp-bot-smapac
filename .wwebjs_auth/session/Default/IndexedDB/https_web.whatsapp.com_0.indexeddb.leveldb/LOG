@@ -1,0 +1,21 @@
+2026/02/21-11:43:07.148 2464 Reusing MANIFEST C:\Users\TI MASTER\Documents\Proyectos_js\chatboot-whatsapp\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/02/21-11:43:07.154 2464 Recovering log #4
+2026/02/21-11:43:07.196 2464 Reusing old log C:\Users\TI MASTER\Documents\Proyectos_js\chatboot-whatsapp\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000004.log 
+2026/02/21-11:44:17.382 2464 Level-0 table #8: started
+2026/02/21-11:44:17.419 2464 Level-0 table #8: 1400592 bytes OK
+2026/02/21-11:44:17.422 2464 Delete type=0 #4
+2026/02/21-11:44:24.447 3f28 Compacting 1@1 + 1@2 files
+2026/02/21-11:44:24.519 3f28 Generated table #9@1: 22730 keys, 913182 bytes
+2026/02/21-11:44:24.519 3f28 Compacted 1@1 + 1@2 files => 913182 bytes
+2026/02/21-11:44:24.521 3f28 compacted to: files[ 0 0 1 0 0 0 0 ]
+2026/02/21-12:17:02.402 2464 Level-0 table #11: started
+2026/02/21-12:17:02.456 2464 Level-0 table #11: 1509796 bytes OK
+2026/02/21-12:17:02.458 2464 Delete type=2 #5
+2026/02/21-12:17:02.458 2464 Delete type=0 #7
+2026/02/21-12:17:02.458 2464 Delete type=2 #8
+2026/02/21-12:17:03.269 2464 Compacting 1@1 + 1@2 files
+2026/02/21-12:17:03.331 2464 Generated table #12@1: 31224 keys, 1323999 bytes
+2026/02/21-12:17:03.331 2464 Compacted 1@1 + 1@2 files => 1323999 bytes
+2026/02/21-12:17:03.332 2464 compacted to: files[ 0 0 1 0 0 0 0 ]
+2026/02/21-12:17:03.333 2464 Delete type=2 #9
+2026/02/21-12:17:03.333 2464 Delete type=2 #11

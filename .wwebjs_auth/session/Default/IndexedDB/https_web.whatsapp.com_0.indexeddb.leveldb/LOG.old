@@ -1,0 +1,5 @@
+2026/02/20-17:05:10.994 1f4 Creating DB C:\Users\TI MASTER\Documents\Proyectos_js\chatboot-whatsapp\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb since it was missing.
+2026/02/20-17:05:11.002 1f4 Reusing MANIFEST C:\Users\TI MASTER\Documents\Proyectos_js\chatboot-whatsapp\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/02/20-17:07:44.056 3ce4 Level-0 table #5: started
+2026/02/20-17:07:44.127 3ce4 Level-0 table #5: 1015264 bytes OK
+2026/02/20-17:07:44.129 3ce4 Delete type=0 #3
