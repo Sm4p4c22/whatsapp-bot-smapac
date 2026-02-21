@@ -12,7 +12,17 @@ app.use(express.json());
 // CONFIGURACIÓN DEL BOT DE WHATSAPP
 // ============================================
 const client = new Client({
-    authStrategy: new LocalAuth() // Mantiene la sesión guardada [citation:7][citation:10]
+    authStrategy: new LocalAuth(),
+    puppeteer: {
+        headless: true,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--disable-gpu'
+        ]
+    }
 });
 
 // Mostrar QR para escanear con el celular
