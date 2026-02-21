@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "postinstall": "npx puppeteer browsers install chrome",
+    "postinstall": "node node_modules/puppeteer/install.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,6 +15,7 @@
     "axios": "^1.13.5",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "puppeteer": "^21.0.0",
     "qrcode-terminal": "^0.12.0",
     "whatsapp-web.js": "^1.34.6"
   }
