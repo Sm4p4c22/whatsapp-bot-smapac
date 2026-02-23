@@ -70,7 +70,12 @@ console.log('=' .repeat(50) + '\n');
 // ============================================
 // CONTINÚA  CÓDIGO NORMAL
 // ============================================
+// index.js - Reemplaza la definición del cliente
 const { Client, LocalAuth } = require('whatsapp-web.js');
+// Importamos puppeteer-core
+const puppeteer = require('puppeteer-core');
+// Importamos la librería de chromium
+const chromium = require('@sparticuz/chromium');
 const qrcode = require('qrcode-terminal');
 const express = require('express');
 const axios = require('axios');
@@ -80,14 +85,17 @@ const app = express();
 app.use(express.json());
 
 // ============================================
-// CONFIGURACIÓN DEL BOT DE WHATSAPP
+// CONFIGURACIÓN DEL BOT DE WHATSAPP CON @sparticuz/chromium
 // ============================================
 const client = new Client({
     authStrategy: new LocalAuth(),
+    // Le decimos a whatsapp-web.js que use puppeteer-core
     puppeteer: {
+        // Usamos el launcher de la librería especializada
+        ...chromium.puppeteer,
         headless: true,
-        executablePath: '/usr/bin/chromium-browser', // Ruta CORREGIDA con guión
         args: [
+            ...chromium.args,
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
@@ -95,7 +103,9 @@ const client = new Client({
             '--disable-gpu',
             '--no-first-run',
             '--no-zygote'
-        ]
+        ],
+        // La ruta la proporciona automáticamente chromium
+        executablePath: await chromium.executablePath(),
     }
 });
 
