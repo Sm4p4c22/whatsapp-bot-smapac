@@ -1,4 +1,75 @@
+// ============================================
+// DIAGNÓSTICO: Buscar Chromium
+// ============================================
+const fs = require('fs');
+const { execSync } = require('child_process');
+
+console.log('🔍 Iniciando diagnóstico de Chromium...');
+
+// Buscar en rutas comunes
+const rutasPosibles = [
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/chrome',
+    '/usr/bin/google-chrome',
+    '/usr/bin/chromium-browser-stable',
+    '/snap/bin/chromium',
+    '/app/.apt/usr/bin/chromium',
+    '/app/.apt/usr/bin/chromium-browser'
+];
+
+console.log('🔍 Buscando en rutas específicas:');
+rutasPosibles.forEach(ruta => {
+    try {
+        if (fs.existsSync(ruta)) {
+            console.log(`✅ ENCONTRADO: ${ruta}`);
+        } else {
+            console.log(`❌ No encontrado: ${ruta}`);
+        }
+    } catch (e) {
+        console.log(`Error al verificar ${ruta}`);
+    }
+});
+
+// Buscar con el comando 'which'
+console.log('\n🔍 Buscando con comandos del sistema:');
+try {
+    const result = execSync('which chromium').toString().trim();
+    console.log(`✅ 'which chromium' → ${result}`);
+} catch (e) {
+    console.log('❌ chromium no está en PATH');
+}
+
+try {
+    const result = execSync('which chromium-browser').toString().trim();
+    console.log(`✅ 'which chromium-browser' → ${result}`);
+} catch (e) {
+    console.log('❌ chromium-browser no está en PATH');
+}
+
+try {
+    const result = execSync('which google-chrome').toString().trim();
+    console.log(`✅ 'which google-chrome' → ${result}`);
+} catch (e) {
+    console.log('❌ google-chrome no está en PATH');
+}
+
+// Buscar en directorios comunes
+console.log('\n🔍 Buscando en /usr/bin/...');
+try {
+    const files = execSync('ls -la /usr/bin/ | grep -E "chrom|chrome" | head -20').toString();
+    console.log('Archivos encontrados en /usr/bin/:');
+    console.log(files);
+} catch (e) {
+    console.log('❌ Error al listar /usr/bin/');
+}
+
+console.log('🔍 Diagnóstico completado\n');
+console.log('=' .repeat(50) + '\n');
 // index.js
+// ============================================
+// CONTINÚA  CÓDIGO NORMAL
+// ============================================
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const express = require('express');
