@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "postinstall": "node node_modules/puppeteer/install.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "start": "node index.js",
+  "postinstall": "echo 'Usando Chromium del sistema'",
+  "test": "echo \"Error: no test specified\" && exit 1"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
