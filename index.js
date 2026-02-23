@@ -270,24 +270,51 @@ iniciarBot();
 app.get('/', (req, res) => {
     res.send('🤖 Chatbot de WhatsApp funcionando!');
 });
-
+// ============================================
+// ENDPOINT PARA VER EL QR
+// ============================================
 app.get('/qr', (req, res) => {
     try {
-        const qr = fs.readFileSync('./qr.txt', 'utf8');
+        // Intentar leer el archivo QR
+        const qrCode = fs.readFileSync('./qr.txt', 'utf8');
+        
         res.send(`
             <html>
-                <head><title>QR del Bot</title></head>
+                <head>
+                    <title>WhatsApp Bot - QR</title>
+                    <style>
+                        body { font-family: Arial; text-align: center; padding: 50px; background: #f0f0f0; }
+                        .container { background: white; padding: 30px; border-radius: 10px; max-width: 600px; margin: 0 auto; }
+                        h1 { color: #333; }
+                        .qr-container { margin: 30px auto; padding: 20px; background: #f9f9f9; border: 2px solid #ccc; }
+                        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; font-size: 12px; }
+                    </style>
+                </head>
                 <body>
-                    <h1>📱 Código QR</h1>
-                    <pre>${qr}</pre>
-                    <p>Escanea con WhatsApp</p>
+                    <div class="container">
+                        <h1>📱 Código QR</h1>
+                        <div class="qr-container">
+                            <p>Escanea este código con WhatsApp:</p>
+                            <pre>${qrCode}</pre>
+                        </div>
+                    </div>
                 </body>
             </html>
         `);
-    } catch (e) {
-        res.send('No hay QR disponible aún');
+    } catch (error) {
+        res.send(`
+            <html>
+                <head><title>QR no disponible</title></head>
+                <body>
+                    <h1>⏳ QR no disponible aún</h1>
+                    <p>El QR aparecerá cuando el bot inicie completamente.</p>
+                    <meta http-equiv="refresh" content="10">
+                </body>
+            </html>
+        `);
     }
 });
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
