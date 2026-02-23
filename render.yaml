@@ -1,12 +1,10 @@
 services:
   - type: web
     name: whatsapp-bot-smapac
-    runtime: node
-    buildCommand: |
-      apt-get update
-      apt-get install -y chromium-browser
-      npm install
-    startCommand: npm start
+    runtime: docker
+    repo: https://github.com/Sm4p4c22/whatsapp-bot-smapac
+    branch: main
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: PORT
         value: 3000
