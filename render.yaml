@@ -14,3 +14,7 @@ services:
         value: https://restserver-smapac.herokuapp.com/api/
       - key: URL_CLIENT
         value: https://smapac.gob.mx/pagaturecibo/
+      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
+        value: "true"
+      - key: PUPPETEER_EXECUTABLE_PATH
+        value: "/usr/bin/chromium"
