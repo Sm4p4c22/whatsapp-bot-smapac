@@ -1,75 +1,8 @@
 // ============================================
-// DIAGNÓSTICO: Buscar Chromium
+// DIAGNÓSTICO SOLO PARA LINUX (comentado en Windows)
 // ============================================
 const fs = require('fs');
 const { execSync } = require('child_process');
-
-console.log('🔍 Iniciando diagnóstico de Chromium...');
-
-// Buscar en rutas comunes
-const rutasPosibles = [
-    '/usr/bin/chromium',
-    '/usr/bin/chromium-browser',
-    '/usr/bin/chrome',
-    '/usr/bin/google-chrome',
-    '/usr/bin/chromium-browser-stable',
-    '/snap/bin/chromium',
-    '/app/.apt/usr/bin/chromium',
-    '/app/.apt/usr/bin/chromium-browser'
-];
-
-console.log('🔍 Buscando en rutas específicas:');
-rutasPosibles.forEach(ruta => {
-    try {
-        if (fs.existsSync(ruta)) {
-            console.log(`✅ ENCONTRADO: ${ruta}`);
-        } else {
-            console.log(`❌ No encontrado: ${ruta}`);
-        }
-    } catch (e) {
-        console.log(`Error al verificar ${ruta}`);
-    }
-});
-
-// Buscar con el comando 'which'
-console.log('\n🔍 Buscando con comandos del sistema:');
-try {
-    const result = execSync('which chromium').toString().trim();
-    console.log(`✅ 'which chromium' → ${result}`);
-} catch (e) {
-    console.log('❌ chromium no está en PATH');
-}
-
-try {
-    const result = execSync('which chromium-browser').toString().trim();
-    console.log(`✅ 'which chromium-browser' → ${result}`);
-} catch (e) {
-    console.log('❌ chromium-browser no está en PATH');
-}
-
-try {
-    const result = execSync('which google-chrome').toString().trim();
-    console.log(`✅ 'which google-chrome' → ${result}`);
-} catch (e) {
-    console.log('❌ google-chrome no está en PATH');
-}
-
-// Buscar en directorios comunes
-console.log('\n🔍 Buscando en /usr/bin/...');
-try {
-    const files = execSync('ls -la /usr/bin/ | grep -E "chrom|chrome" | head -20').toString();
-    console.log('Archivos encontrados en /usr/bin/:');
-    console.log(files);
-} catch (e) {
-    console.log('❌ Error al listar /usr/bin/');
-}
-
-console.log('🔍 Diagnóstico completado\n');
-console.log('=' .repeat(50) + '\n');
-
-// ============================================
-// CONFIGURACIÓN DEL BOT DE WHATSAPP
-// ============================================
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const express = require('express');
@@ -79,28 +12,115 @@ require('dotenv').config();
 const app = express();
 app.use(express.json());
 
+// Solo ejecutar diagnóstico completo en Linux
+if (process.platform !== 'win32') {
+    console.log('🔍 Iniciando diagnóstico de Chromium...');
+    
+    const rutasPosibles = [
+        '/usr/bin/chromium',
+        '/usr/bin/chromium-browser',
+        '/usr/bin/chrome',
+        '/usr/bin/google-chrome',
+        '/usr/bin/chromium-browser-stable',
+        '/snap/bin/chromium',
+        '/app/.apt/usr/bin/chromium',
+        '/app/.apt/usr/bin/chromium-browser'
+    ];
+
+    console.log('🔍 Buscando en rutas específicas:');
+    rutasPosibles.forEach(ruta => {
+        try {
+            if (fs.existsSync(ruta)) {
+                console.log(`✅ ENCONTRADO: ${ruta}`);
+            } else {
+                console.log(`❌ No encontrado: ${ruta}`);
+            }
+        } catch (e) {
+            console.log(`Error al verificar ${ruta}`);
+        }
+    });
+
+    console.log('\n🔍 Diagnóstico completado\n');
+    console.log('=' .repeat(50) + '\n');
+}
+
 // ============================================
-// INICIALIZACIÓN ASÍNCRONA DEL BOT
+// INICIALIZACIÓN ASÍNCRONA DEL BOT (MULTIPLATAFORMA)
 // ============================================
 async function iniciarBot() {
     try {
         console.log('🚀 Iniciando bot...');
         
-        // Determinar la ruta de Chrome/Chromium
-        let executablePath = '/usr/bin/chromium'; // Cambiado a chromium por defecto
+        let executablePath;
+        const platform = process.platform;
+        console.log(`🖥️  Sistema operativo detectado: ${platform}`);
         
-        // Verificar si existe alguna de las rutas posibles
-        if (fs.existsSync('/usr/bin/chromium')) {
-            executablePath = '/usr/bin/chromium';
-            console.log('✅ Chromium encontrado en /usr/bin/chromium');
-        } else if (fs.existsSync('/usr/bin/chromium-browser')) {
-            executablePath = '/usr/bin/chromium-browser';
-            console.log('✅ Chromium-browser encontrado');
-        } else if (fs.existsSync('/usr/bin/google-chrome-stable')) {
-            executablePath = '/usr/bin/google-chrome-stable';
-            console.log('✅ Chrome estable encontrado');
+        if (platform === 'win32') {
+            // ============================================
+            // Estamos en WINDOWS
+            // ============================================
+            console.log('🔍 Buscando Chrome en Windows...');
+            const rutasWindows = [
+                'C:\\Program Files\\Chromium\\Application\\chrome.exe', // ✅ NUEVA RUTA
+                'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+                'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+                'C:\\Users\\TI MASTER\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe',
+                'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
+                'C:\\Program Files (x86)\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
+                'C:\\Users\\TI MASTER\\AppData\\Local\\BraveSoftware\\Brave-Browser\\Application\\brave.exe'
+            ];
+            
+            for (const ruta of rutasWindows) {
+                try {
+                    if (fs.existsSync(ruta)) {
+                        executablePath = ruta;
+                        console.log(`✅ Navegador encontrado en: ${ruta}`);
+                        break;
+                    }
+                } catch (e) {
+                    // Ignorar errores de permisos
+                }
+            }
         } else {
+            // ============================================
+            // Estamos en LINUX (Render, Heroku, etc.)
+            // ============================================
+            console.log('🔍 Buscando Chromium en Linux...');
+            const rutasLinux = [
+                '/usr/bin/chromium',
+                '/usr/bin/chromium-browser',
+                '/usr/bin/google-chrome-stable',
+                '/app/.apt/usr/bin/chromium',
+                '/app/.apt/usr/bin/chromium-browser'
+            ];
+            
+            for (const ruta of rutasLinux) {
+                try {
+                    if (fs.existsSync(ruta)) {
+                        executablePath = ruta;
+                        console.log(`✅ Chromium encontrado en: ${ruta}`);
+                        break;
+                    }
+                } catch (e) {
+                    // Ignorar errores de permisos
+                }
+            }
+        }
+        
+        if (!executablePath) {
             console.log('❌ No se encontró ningún navegador');
+            if (platform === 'win32') {
+                console.log('💡 En Windows, instala Chrome desde: https://www.google.com/chrome/');
+            } else {
+                console.log('💡 En Linux, asegúrate de instalar chromium con: apt-get install chromium');
+            }
+            // En Windows, podemos intentar con la ruta por defecto de Chrome
+            if (platform === 'win32') {
+                executablePath = 'C:\\Program Files\\Chromium\\Application\\chrome.exe';
+                console.log('🔧 Intentando con ruta por defecto de Chrome...');
+            } else {
+                return; // En Linux sí detenemos si no hay navegador
+            }
         }
         
         console.log(`🔧 Usando navegador en: ${executablePath}`);
@@ -108,7 +128,7 @@ async function iniciarBot() {
         const client = new Client({
             authStrategy: new LocalAuth(),
             puppeteer: {
-                headless: true,
+                headless: false, // Cambiado a false para ver qué pasa
                 executablePath: executablePath,
                 args: [
                     '--no-sandbox',
@@ -118,11 +138,22 @@ async function iniciarBot() {
                     '--disable-gpu',
                     '--no-first-run',
                     '--no-zygote',
-                    '--single-process',
-                    '--disable-extensions'
-                ]
-            }
-        });
+                    '--disable-extensions',
+                    '--disable-web-security',
+                    '--disable-features=IsolateOrigins,site-per-process',
+                    '--allow-running-insecure-content',
+                    '--window-size=1280,800',
+                    '--remote-debugging-port=9222',
+                    '--disable-blink-features=AutomationControlled', // Importante
+                    '--disable-sync', // Evita sincronización
+                    '--disable-default-apps', // Evita apps de Chrome
+                    '--disable-notifications' // Evita notificaciones
+            ],
+            defaultViewport: null, // Línea NUEVA importante
+            ignoreDefaultArgs: ['--enable-automation'], // Oculta que es automatizado
+            timeout: 60000 // Aumenta timeout a 60 segundos
+    }
+});
 
         // Mostrar QR para escanear con el celular
         client.on('qr', (qr) => {
@@ -132,6 +163,7 @@ async function iniciarBot() {
             // Guardar QR para acceso web
             try {
                 fs.writeFileSync('./qr.txt', qr);
+                console.log('✅ QR guardado en archivo');
             } catch (e) {
                 console.error('Error guardando QR:', e.message);
             }
@@ -199,10 +231,9 @@ async function iniciarBot() {
         });
 
         await client.initialize();
-        return client;
 
     } catch (error) {
-        console.error('❌ Error iniciando bot:', error.message);
+        console.error('❌ Error en iniciarBot:', error.message);
         setTimeout(() => {
             console.log('🔄 Reintentando en 10 segundos...');
             iniciarBot();
@@ -275,14 +306,13 @@ iniciarBot();
 app.get('/', (req, res) => {
     res.send('🤖 Chatbot de WhatsApp funcionando!');
 });
+
 // ============================================
 // ENDPOINT PARA VER EL QR
 // ============================================
 app.get('/qr', (req, res) => {
     try {
-        // Intentar leer el archivo QR
         const qrCode = fs.readFileSync('./qr.txt', 'utf8');
-        
         res.send(`
             <html>
                 <head>
@@ -319,7 +349,6 @@ app.get('/qr', (req, res) => {
         `);
     }
 });
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
