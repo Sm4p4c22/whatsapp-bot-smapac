@@ -15,7 +15,7 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
-        executablePath: '/usr/bin/chromium', // Ruta de Chromium en Render
+        executablePath: '/usr/bin/chromium-browser', // Ruta CORREGIDA con guión
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
