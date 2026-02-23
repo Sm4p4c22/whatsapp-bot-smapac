@@ -66,16 +66,11 @@ try {
 
 console.log('🔍 Diagnóstico completado\n');
 console.log('=' .repeat(50) + '\n');
-// index.js
+
 // ============================================
-// CONTINÚA  CÓDIGO NORMAL
+// CONFIGURACIÓN DEL BOT DE WHATSAPP
 // ============================================
-// index.js - Reemplaza la definición del cliente
 const { Client, LocalAuth } = require('whatsapp-web.js');
-// Importamos puppeteer-core
-const puppeteer = require('puppeteer-core');
-// Importamos la librería de chromium
-const chromium = require('@sparticuz/chromium');
 const qrcode = require('qrcode-terminal');
 const express = require('express');
 const axios = require('axios');
@@ -85,133 +80,149 @@ const app = express();
 app.use(express.json());
 
 // ============================================
-// CONFIGURACIÓN DEL BOT DE WHATSAPP CON @sparticuz/chromium
+// INICIALIZACIÓN ASÍNCRONA DEL BOT
 // ============================================
-const client = new Client({
-    authStrategy: new LocalAuth(),
-    // Le decimos a whatsapp-web.js que use puppeteer-core
-    puppeteer: {
-        // Usamos el launcher de la librería especializada
-        ...chromium.puppeteer,
-        headless: true,
-        args: [
-            ...chromium.args,
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--disable-gpu',
-            '--no-first-run',
-            '--no-zygote'
-        ],
-        // La ruta la proporciona automáticamente chromium
-        executablePath: await chromium.executablePath(),
-    }
-});
-
-// Mostrar QR para escanear con el celular
-client.on('qr', (qr) => {
-    console.log('📱 Escanea este código QR con WhatsApp:');
-    qrcode.generate(qr, { small: true });
-});
-
-// Cuando el bot está listo
-client.on('ready', () => {
-    console.log('✅ Bot conectado y listo para usar!');
-});
-
-// ============================================
-// GESTIÓN DE ESTADOS DE CONVERSACIÓN
-// ============================================
-// Aquí guardamos en qué paso está cada usuario
-const conversaciones = new Map(); // { numero: { estado: 'inicio', contrato: null } }
-
-client.on('message', async (message) => {
-    const numero = message.from; // Ej: "521234567890@c.us"
-    const texto = message.body.trim();
-    
-    console.log(`📩 Mensaje de ${numero}: ${texto}`);
-    
-    // Obtener o crear estado del usuario
-    if (!conversaciones.has(numero)) {
-        conversaciones.set(numero, { estado: 'inicio' });
-    }
-    
-    const estadoActual = conversaciones.get(numero);
-    
+async function iniciarBot() {
     try {
-        // ============================================
-        // MÁQUINA DE ESTADOS - FLUJO DE CONVERSACIÓN
-        // ============================================
+        console.log('🚀 Iniciando bot...');
         
-        // ESTADO 1: SALUDO INICIAL
-        if (estadoActual.estado === 'inicio') {
-            await message.reply(
-                '¡Hola! ¿Quieres consultar el estatus y adeudo de un contrato?\n' +
-                'Responde *SÍ* o *NO*'
-            );
-            conversaciones.set(numero, { estado: 'esperando_confirmacion' });
+        // Determinar la ruta de Chrome/Chromium
+        let executablePath = '/usr/bin/google-chrome-stable'; // Por defecto
+        
+        // Verificar si existe alguna de las rutas posibles
+        if (fs.existsSync('/usr/bin/google-chrome-stable')) {
+            executablePath = '/usr/bin/google-chrome-stable';
+        } else if (fs.existsSync('/usr/bin/chromium-browser')) {
+            executablePath = '/usr/bin/chromium-browser';
+        } else if (fs.existsSync('/usr/bin/chromium')) {
+            executablePath = '/usr/bin/chromium';
         }
         
-        // ESTADO 2: ESPERANDO CONFIRMACIÓN
-        else if (estadoActual.estado === 'esperando_confirmacion') {
-            if (texto.toLowerCase() === 'sí' || texto.toLowerCase() === 'si') {
-                await message.reply('Por favor, envíame tu *número de contrato*:');
-                conversaciones.set(numero, { estado: 'esperando_contrato' });
-            } else {
-                await message.reply('Ok, gracias por contactarnos. ¡Hasta luego!');
-                conversaciones.set(numero, { estado: 'inicio' }); // Reiniciamos
+        console.log(`🔧 Usando navegador en: ${executablePath}`);
+
+        const client = new Client({
+            authStrategy: new LocalAuth(),
+            puppeteer: {
+                headless: true,
+                executablePath: executablePath,
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-accelerated-2d-canvas',
+                    '--disable-gpu',
+                    '--no-first-run',
+                    '--no-zygote',
+                    '--single-process',
+                    '--disable-extensions'
+                ]
             }
-        }
-        
-        // ESTADO 3: ESPERANDO NÚMERO DE CONTRATO
-        else if (estadoActual.estado === 'esperando_contrato') {
-            const numeroContrato = texto;
+        });
+
+        // Mostrar QR para escanear con el celular
+        client.on('qr', (qr) => {
+            console.log('📱 Escanea este código QR con WhatsApp:');
+            qrcode.generate(qr, { small: true });
             
-            // Mostrar que estamos procesando
-            await message.reply('🔍 Consultando información, un momento por favor...');
+            // Guardar QR para acceso web
+            try {
+                fs.writeFileSync('./qr.txt', qr);
+            } catch (e) {
+                console.error('Error guardando QR:', e.message);
+            }
+        });
+
+        // Cuando el bot está listo
+        client.on('ready', () => {
+            console.log('✅ Bot conectado y listo para usar!');
+        });
+
+        client.on('disconnected', (reason) => {
+            console.log('❌ Bot desconectado:', reason);
+            setTimeout(() => {
+                console.log('🔄 Reconectando...');
+                iniciarBot();
+            }, 5000);
+        });
+
+        // ============================================
+        // GESTIÓN DE ESTADOS DE CONVERSACIÓN
+        // ============================================
+        const conversaciones = new Map();
+
+        client.on('message', async (message) => {
+            const numero = message.from;
+            const texto = message.body.trim();
             
-            // Llamar a tu API existente
-            const resultado = await consultarAPI(numeroContrato);
+            console.log(`📩 Mensaje de ${numero}: ${texto}`);
             
-            // Enviar respuesta al usuario
-            await message.reply(resultado);
+            if (!conversaciones.has(numero)) {
+                conversaciones.set(numero, { estado: 'inicio' });
+            }
             
-            // Reiniciamos la conversación para que pueda consultar otro contrato
-            conversaciones.set(numero, { estado: 'inicio' });
-        }
-        
+            const estadoActual = conversaciones.get(numero);
+            
+            try {
+                if (estadoActual.estado === 'inicio') {
+                    await message.reply(
+                        '¡Hola! ¿Quieres consultar el estatus y adeudo de un contrato?\n' +
+                        'Responde *SÍ* o *NO*'
+                    );
+                    conversaciones.set(numero, { estado: 'esperando_confirmacion' });
+                }
+                else if (estadoActual.estado === 'esperando_confirmacion') {
+                    if (texto.toLowerCase() === 'sí' || texto.toLowerCase() === 'si') {
+                        await message.reply('Por favor, envíame tu *número de contrato*:');
+                        conversaciones.set(numero, { estado: 'esperando_contrato' });
+                    } else {
+                        await message.reply('Ok, gracias por contactarnos. ¡Hasta luego!');
+                        conversaciones.set(numero, { estado: 'inicio' });
+                    }
+                }
+                else if (estadoActual.estado === 'esperando_contrato') {
+                    const numeroContrato = texto;
+                    await message.reply('🔍 Consultando información, un momento por favor...');
+                    const resultado = await consultarAPI(numeroContrato);
+                    await message.reply(resultado);
+                    conversaciones.set(numero, { estado: 'inicio' });
+                }
+            } catch (error) {
+                console.error('Error procesando mensaje:', error);
+                await message.reply('❌ Ocurrió un error. Por favor, intenta más tarde.');
+                conversaciones.set(numero, { estado: 'inicio' });
+            }
+        });
+
+        await client.initialize();
+        return client;
+
     } catch (error) {
-        console.error('Error procesando mensaje:', error);
-        await message.reply('❌ Ocurrió un error. Por favor, intenta más tarde.');
-        conversaciones.set(numero, { estado: 'inicio' }); // Reiniciamos por seguridad
+        console.error('❌ Error iniciando bot:', error.message);
+        setTimeout(() => {
+            console.log('🔄 Reintentando en 10 segundos...');
+            iniciarBot();
+        }, 10000);
     }
-});
+}
 
 // ============================================
-// FUNCIÓN PARA CONSULTAR TU API EXISTENTE
+// FUNCIÓN PARA CONSULTAR API
 // ============================================
 async function consultarAPI(numeroContrato) {
     try {
-        // Validar que el contrato sea de 6 dígitos
         if (!/^\d{6}$/.test(numeroContrato)) {
             return '❌ El número de contrato debe tener *6 dígitos*. Por favor verifica.';
         }
         
-        // Construir la URL correcta
         const url = `${process.env.API_CONTRATOS_URL}contratos/${numeroContrato}`;
-        console.log('Consultando:', url); // Para depurar
+        console.log('Consultando:', url);
         
         const response = await axios.get(url, {
             timeout: 10000,
-            headers: {
-                'Accept': 'application/json'
-            }
+            headers: { 'Accept': 'application/json' }
         });
         
-        // Verificar que la respuesta es válida
         if (response.data && response.data.nombre) {
-            // Formatear la respuesta de manera amigable
             let mensaje = `✅ *CONTRATO ENCONTRADO*\n\n`;
             mensaje += `👤 *Nombre:* ${response.data.nombre}\n`;
             mensaje += `📍 *Dirección:* ${response.data.direccion}, Col. ${response.data.colonia}\n`;
@@ -235,7 +246,6 @@ async function consultarAPI(numeroContrato) {
         } else {
             return '❌ No se encontró información para ese contrato.';
         }
-        
     } catch (error) {
         console.error('Error detallado:', error.response?.data || error.message);
         
@@ -250,13 +260,33 @@ async function consultarAPI(numeroContrato) {
 }
 
 // ============================================
-// INICIAR EL BOT Y EL SERVIDOR
+// INICIAR EL BOT
 // ============================================
-client.initialize();
+iniciarBot();
 
-// Pequeño servidor web (útil si después necesitas webhooks)
+// ============================================
+// SERVIDOR WEB
+// ============================================
 app.get('/', (req, res) => {
     res.send('🤖 Chatbot de WhatsApp funcionando!');
+});
+
+app.get('/qr', (req, res) => {
+    try {
+        const qr = fs.readFileSync('./qr.txt', 'utf8');
+        res.send(`
+            <html>
+                <head><title>QR del Bot</title></head>
+                <body>
+                    <h1>📱 Código QR</h1>
+                    <pre>${qr}</pre>
+                    <p>Escanea con WhatsApp</p>
+                </body>
+            </html>
+        `);
+    } catch (e) {
+        res.send('No hay QR disponible aún');
+    }
 });
 
 const PORT = process.env.PORT || 3000;
