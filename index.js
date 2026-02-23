@@ -87,15 +87,20 @@ async function iniciarBot() {
         console.log('🚀 Iniciando bot...');
         
         // Determinar la ruta de Chrome/Chromium
-        let executablePath = '/usr/bin/google-chrome-stable'; // Por defecto
+        let executablePath = '/usr/bin/chromium'; // Cambiado a chromium por defecto
         
         // Verificar si existe alguna de las rutas posibles
-        if (fs.existsSync('/usr/bin/google-chrome-stable')) {
-            executablePath = '/usr/bin/google-chrome-stable';
+        if (fs.existsSync('/usr/bin/chromium')) {
+            executablePath = '/usr/bin/chromium';
+            console.log('✅ Chromium encontrado en /usr/bin/chromium');
         } else if (fs.existsSync('/usr/bin/chromium-browser')) {
             executablePath = '/usr/bin/chromium-browser';
-        } else if (fs.existsSync('/usr/bin/chromium')) {
-            executablePath = '/usr/bin/chromium';
+            console.log('✅ Chromium-browser encontrado');
+        } else if (fs.existsSync('/usr/bin/google-chrome-stable')) {
+            executablePath = '/usr/bin/google-chrome-stable';
+            console.log('✅ Chrome estable encontrado');
+        } else {
+            console.log('❌ No se encontró ningún navegador');
         }
         
         console.log(`🔧 Usando navegador en: ${executablePath}`);
